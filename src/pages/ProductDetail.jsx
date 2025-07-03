@@ -1,26 +1,92 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Star, Minus, Plus, Heart, Share2, Truck, Shield, RotateCcw } from 'lucide-react';
-import { products } from '../data/mockData';
 import { useCart } from '../context/CartContext';
+import { productsAPI } from '../services/api';
 
-const ProductDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+const ProductDetail = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [product, setProduct] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const product = products.find(p => p.id === id);
+  useEffect(() => {
+    const fetchProductData = async () => {
+      if (!id) return;
+      
+      setIsLoading(true);
+      setError(null);
+      try {
+        // Fetch product and related products in parallel
+        const [productData, relatedProductsData] = await Promise.all([
+          productsAPI.getProductById(id),
+          productsAPI.getRelatedProducts(id)
+        ]);
+        
+        setProduct(productData);
+        setRelatedProducts(relatedProductsData);
+      } catch (err) {
+        console.error('Error fetching product data:', err);
+        setError('Failed to load product data. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchProductData();
+    // Reset quantity when product changes
+    setQuantity(1);
+    // Reset selected image when product changes
+    setSelectedImage(0);
+  }, [id]);
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-xl text-gray-700">Loading product details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center bg-white p-8 rounded-lg shadow-md max-w-md">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Something went wrong</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show not found state
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center bg-white p-8 rounded-lg shadow-md max-w-md">
+          <div className="text-yellow-500 text-5xl mb-4">🔍</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h2>
+          <p className="text-gray-600 mb-6">The product you're looking for doesn't exist or has been removed.</p>
           <button
             onClick={() => navigate('/')}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
           >
             Go Home
           </button>
@@ -34,20 +100,21 @@ const ProductDetail: React.FC = () => {
     // You could add a toast notification here
   };
 
-  const handleQuantityChange = (change: number) => {
+  const handleQuantityChange = (change) => {
     const newQuantity = quantity + change;
     if (newQuantity >= 1 && newQuantity <= 10) {
       setQuantity(newQuantity);
     }
   };
 
-  // Mock additional images (in a real app, these would be different product images)
-  const productImages = [
+  // Create an array of product images (in a real app, these would come from the API)
+  // For now, we'll just use the same image multiple times as a placeholder
+  const productImages = product?.image ? [
     product.image,
     product.image,
     product.image,
     product.image
-  ];
+  ] : [];
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -234,10 +301,8 @@ const ProductDetail: React.FC = () => {
         <section className="mt-16">
           <h2 className="text-2xl font-bold text-gray-900 mb-8">You might also like</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products
-              .filter(p => p.category === product.category && p.id !== product.id)
-              .slice(0, 4)
-              .map(relatedProduct => (
+            {relatedProducts.length > 0 ? (
+              relatedProducts.slice(0, 4).map(relatedProduct => (
                 <div
                   key={relatedProduct.id}
                   onClick={() => navigate(`/product/${relatedProduct.id}`)}
@@ -259,7 +324,12 @@ const ProductDetail: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
+            ) : (
+              <div className="col-span-4 text-center py-8">
+                <p className="text-gray-500">No related products found</p>
+              </div>
+            )}
           </div>
         </section>
       </div>

@@ -1,15 +1,15 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft, Loader } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
-const Cart: React.FC = () => {
-  const { items, updateQuantity, removeFromCart, getTotalPrice, clearCart } = useCart();
+const Cart = () => {
+  const { items, updateQuantity, removeFromCart, getTotalPrice, clearCart, isLoading } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleQuantityChange = (productId: string, newQuantity: number) => {
+  const handleQuantityChange = (productId, newQuantity) => {
     if (newQuantity < 1) {
       removeFromCart(productId);
     } else {
@@ -25,6 +25,19 @@ const Cart: React.FC = () => {
     navigate('/checkout');
   };
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+        <div className="bg-white rounded-2xl p-12 text-center max-w-md w-full">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-6"></div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading your cart</h2>
+          <p className="text-gray-600">Please wait while we fetch your cart items...</p>
+        </div>
+      </div>
+    );
+  }
+  
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">

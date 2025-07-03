@@ -1,6 +1,6 @@
-import { Product, Category, Order } from '../types';
+import { products } from '../types'; // assuming products are extracted separately if reused
 
-export const categories: Category[] = [
+export const categories = [
   { id: '1', name: 'Electronics', image: 'https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg?auto=compress&cs=tinysrgb&w=300', icon: 'Smartphone' },
   { id: '2', name: 'Clothing', image: 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=300', icon: 'Shirt' },
   { id: '3', name: 'Home & Garden', image: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=300', icon: 'Home' },
@@ -9,7 +9,7 @@ export const categories: Category[] = [
   { id: '6', name: 'Toys', image: 'https://images.pexels.com/photos/163637/lego-toys-child-colorful-163637.jpeg?auto=compress&cs=tinysrgb&w=300', icon: 'Gamepad2' },
 ];
 
-export const products: Product[] = [
+export const products = [
   {
     id: '1',
     name: 'iPhone 15 Pro Max 256GB',
@@ -120,7 +120,7 @@ export const products: Product[] = [
   }
 ];
 
-export const mockOrders: Order[] = [
+export const mockOrders = [
   {
     id: 'ORD-001',
     userId: 'user1',

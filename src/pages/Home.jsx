@@ -1,13 +1,73 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Truck, Shield, RotateCcw, CreditCard } from 'lucide-react';
-import { products, categories } from '../data/mockData';
 import ProductCard from '../components/ProductCard';
 import * as Icons from 'lucide-react';
+import { productsAPI } from '../services/api';
 
-const Home: React.FC = () => {
+const Home = () => {
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch products and categories in parallel
+        const [productsData, categoriesData] = await Promise.all([
+          productsAPI.getProducts(),
+          productsAPI.getCategories()
+        ]);
+        
+        setProducts(productsData);
+        setCategories(categoriesData);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to load data. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
+  
+  // Filter products for featured and deals sections
   const featuredProducts = products.slice(0, 8);
   const dealProducts = products.filter(p => p.originalPrice).slice(0, 4);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-xl text-gray-700">Loading products...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-lg shadow-md max-w-md">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Something went wrong</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -110,7 +170,7 @@ const Home: React.FC = () => {
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {categories.map((category) => {
-              const IconComponent = Icons[category.icon as keyof typeof Icons] as React.ComponentType<any>;
+              const IconComponent = Icons[category.icon];
               return (
                 <Link
                   key={category.id}

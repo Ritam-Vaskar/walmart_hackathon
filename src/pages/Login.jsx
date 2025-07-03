@@ -3,62 +3,31 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const Register: React.FC = () => {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
+const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  const { register, isLoading } = useAuth();
+  const { login, isLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get('redirect') || '/';
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Validation
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword) {
+    if (!email || !password) {
       setError('Please fill in all fields');
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return;
-    }
-
-    if (!acceptTerms) {
-      setError('Please accept the terms and conditions');
-      return;
-    }
-
     try {
-      const fullName = `${formData.firstName} ${formData.lastName}`;
-      const success = await register(fullName, formData.email, formData.password);
+      const success = await login(email, password);
       if (success) {
         navigate(redirectTo === 'checkout' ? '/checkout' : redirectTo);
       } else {
-        setError('Registration failed. Please try again.');
+        setError('Invalid email or password');
       }
     } catch (err) {
       setError('Something went wrong. Please try again.');
@@ -76,19 +45,19 @@ const Register: React.FC = () => {
             </div>
             <span className="text-2xl font-bold text-blue-600">Walmart</span>
           </Link>
-          <h2 className="text-3xl font-bold text-gray-900">Create your account</h2>
+          <h2 className="text-3xl font-bold text-gray-900">Sign in to your account</h2>
           <p className="text-gray-600 mt-2">
-            Already have an account?{' '}
+            Don't have an account?{' '}
             <Link 
-              to={`/login${searchParams.toString() ? `?${searchParams.toString()}` : ''}`}
+              to={`/register${searchParams.toString() ? `?${searchParams.toString()}` : ''}`}
               className="text-blue-600 hover:text-blue-700 font-medium"
             >
-              Sign in here
+              Create one now
             </Link>
           </p>
         </div>
 
-        {/* Registration Form */}
+        {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
@@ -97,51 +66,17 @@ const Register: React.FC = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-                  First Name
-                </label>
-                <input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                  placeholder="John"
-                  disabled={isLoading}
-                />
-              </div>
-              <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Last Name
-                </label>
-                <input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                  placeholder="Doe"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
               </label>
               <input
                 id="email"
-                name="email"
                 type="email"
-                value={formData.email}
-                onChange={handleChange}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                placeholder="john@example.com"
+                placeholder="Enter your email"
                 disabled={isLoading}
               />
             </div>
@@ -153,10 +88,9 @@ const Register: React.FC = () => {
               <div className="relative">
                 <input
                   id="password"
-                  name="password"
                   type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={handleChange}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                   placeholder="Enter your password"
                   disabled={isLoading}
@@ -172,51 +106,17 @@ const Register: React.FC = () => {
               </div>
             </div>
 
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm Password
-              </label>
-              <div className="relative">
+            <div className="flex items-center justify-between">
+              <label className="flex items-center">
                 <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                  placeholder="Confirm your password"
-                  disabled={isLoading}
+                  type="checkbox"
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  disabled={isLoading}
-                >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-start">
-              <input
-                id="acceptTerms"
-                type="checkbox"
-                checked={acceptTerms}
-                onChange={(e) => setAcceptTerms(e.target.checked)}
-                className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                disabled={isLoading}
-              />
-              <label htmlFor="acceptTerms" className="ml-3 text-sm text-gray-600">
-                I agree to the{' '}
-                <Link to="/terms" className="text-blue-600 hover:text-blue-700">
-                  Terms of Service
-                </Link>
-                {' '}and{' '}
-                <Link to="/privacy" className="text-blue-600 hover:text-blue-700">
-                  Privacy Policy
-                </Link>
+                <span className="ml-2 text-sm text-gray-600">Remember me</span>
               </label>
+              <Link to="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">
+                Forgot password?
+              </Link>
             </div>
 
             <button
@@ -227,30 +127,38 @@ const Register: React.FC = () => {
               {isLoading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                  Creating account...
+                  Signing in...
                 </>
               ) : (
-                'Create Account'
+                'Sign In'
               )}
             </button>
           </form>
 
           {/* Demo Account Info */}
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="font-medium text-blue-900 mb-2">Demo Registration</h3>
-            <p className="text-sm text-blue-800">
-              Fill in any information to create a demo account and explore all features.
+            <h3 className="font-medium text-blue-900 mb-2">Demo Account</h3>
+            <p className="text-sm text-blue-800 mb-3">
+              Use any email and password to sign in and explore the demo.
             </p>
+            <div className="grid grid-cols-1 gap-2 text-sm text-blue-700">
+              <div>
+                <span className="font-medium">Email:</span> demo@walmart.com
+              </div>
+              <div>
+                <span className="font-medium">Password:</span> password123
+              </div>
+            </div>
           </div>
 
-          {/* Social Registration */}
+          {/* Social Login */}
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or register with</span>
+                <span className="px-2 bg-white text-gray-500">Or continue with</span>
               </div>
             </div>
 
@@ -282,9 +190,19 @@ const Register: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Footer */}
+        <div className="text-center mt-8 text-sm text-gray-600">
+          <p>
+            By signing in, you agree to our{' '}
+            <Link to="/terms" className="text-blue-600 hover:text-blue-700">Terms of Service</Link>
+            {' '}and{' '}
+            <Link to="/privacy" className="text-blue-600 hover:text-blue-700">Privacy Policy</Link>
+          </p>
+        </div>
       </div>
     </div>
   );
 };
 
-export default Register;
+export default Login;

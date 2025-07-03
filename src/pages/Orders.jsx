@@ -1,22 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Package, Truck, CheckCircle, Clock, ArrowLeft, Eye } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { mockOrders } from '../data/mockData';
+import { ordersAPI } from '../services/api';
 
-const Orders: React.FC = () => {
+const Orders = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [orders, setOrders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [activeFilter, setActiveFilter] = useState('All');
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!user) return;
+      
+      setIsLoading(true);
+      setError(null);
+      try {
+        const ordersData = await ordersAPI.getOrders();
+        setOrders(ordersData);
+      } catch (err) {
+        console.error('Error fetching orders:', err);
+        setError('Failed to load orders. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchOrders();
+  }, [user]);
 
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center bg-white p-8 rounded-lg shadow-md max-w-md">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Please Sign In</h2>
           <p className="text-gray-600 mb-6">You need to be signed in to view your orders.</p>
           <Link
             to="/login?redirect=orders"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
           >
             Sign In
           </Link>
@@ -24,8 +48,39 @@ const Orders: React.FC = () => {
       </div>
     );
   }
+  
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-xl text-gray-700">Loading your orders...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const getStatusIcon = (status: string) => {
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-lg shadow-md max-w-md">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Something went wrong</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const getStatusIcon = (status) => {
     switch (status) {
       case 'pending':
         return <Clock className="w-5 h-5 text-yellow-500" />;
@@ -40,7 +95,7 @@ const Orders: React.FC = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status) => {
     switch (status) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
@@ -73,7 +128,7 @@ const Orders: React.FC = () => {
           </button>
         </div>
 
-        {mockOrders.length === 0 ? (
+        {orders.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center">
             <Package className="w-24 h-24 text-gray-300 mx-auto mb-6" />
             <h2 className="text-2xl font-bold text-gray-900 mb-4">No orders yet</h2>
@@ -90,7 +145,9 @@ const Orders: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {mockOrders.map((order) => (
+            {orders
+              .filter(order => activeFilter === 'All' || order.status.toLowerCase() === activeFilter.toLowerCase())
+              .map((order) => (
               <div key={order.id} className="bg-white rounded-2xl overflow-hidden shadow-sm">
                 {/* Order Header */}
                 <div className="p-6 border-b border-gray-200">
@@ -185,15 +242,16 @@ const Orders: React.FC = () => {
         )}
 
         {/* Order Filters - if there are orders */}
-        {mockOrders.length > 0 && (
+        {orders.length > 0 && (
           <div className="mt-8 bg-white rounded-2xl p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Filter Orders</h2>
             <div className="flex flex-wrap gap-2">
               {['All', 'Pending', 'Processing', 'Shipped', 'Delivered'].map((filter) => (
                 <button
                   key={filter}
+                  onClick={() => setActiveFilter(filter)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    filter === 'All'
+                    filter === activeFilter
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}

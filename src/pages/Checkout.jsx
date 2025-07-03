@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, CreditCard, MapPin, Truck, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Lock, CreditCard, MapPin, Truck, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { ordersAPI } from '../services/api';
 
-const Checkout: React.FC = () => {
+const Checkout = () => {
   const { items, getTotalPrice, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+  const [error, setError] = useState(null);
+  const [orderId, setOrderId] = useState(null);
 
   const [shippingAddress, setShippingAddress] = useState({
     firstName: user?.name.split(' ')[0] || '',
@@ -34,35 +37,62 @@ const Checkout: React.FC = () => {
   const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
 
-  const handleShippingChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleShippingChange = (e) => {
     setShippingAddress({
       ...shippingAddress,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handlePaymentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePaymentChange = (e) => {
     setPaymentInfo({
       ...paymentInfo,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
-
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    setIsProcessing(false);
-    setOrderComplete(true);
-    clearCart();
-
-    // Redirect to orders page after a delay
-    setTimeout(() => {
-      navigate('/orders');
-    }, 3000);
+    setError(null);
+    
+    try {
+      // Create the order using the API
+      const orderData = {
+        shippingAddress: {
+          firstName: shippingAddress.firstName,
+          lastName: shippingAddress.lastName,
+          email: shippingAddress.email,
+          phone: shippingAddress.phone,
+          street: shippingAddress.street,
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          zipCode: shippingAddress.zipCode
+        },
+        paymentMethod: 'credit_card',
+        // In a real app, you would securely handle payment processing
+        // through a payment processor like Stripe
+        paymentDetails: {
+          last4: paymentInfo.cardNumber.slice(-4),
+          expiryDate: paymentInfo.expiryDate
+        }
+      };
+      
+      const result = await ordersAPI.createOrder(orderData);
+      setOrderId(result.id);
+      setIsProcessing(false);
+      setOrderComplete(true);
+      clearCart();
+      
+      // Redirect to orders page after a delay
+      setTimeout(() => {
+        navigate('/orders');
+      }, 3000);
+    } catch (err) {
+      setIsProcessing(false);
+      setError(err instanceof Error ? err.message : 'An error occurred while processing your order');
+      console.error('Order creation failed:', err);
+    }
   };
 
   if (!user) {
@@ -84,6 +114,12 @@ const Checkout: React.FC = () => {
           <p className="text-gray-600 mb-6">
             Thank you for your order. You'll receive a confirmation email shortly.
           </p>
+          {orderId && (
+            <div className="bg-blue-50 rounded-lg p-4 mb-6">
+              <p className="text-sm text-blue-800">Order ID</p>
+              <p className="text-lg font-medium text-blue-900">{orderId}</p>
+            </div>
+          )}
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
             <p className="text-sm text-gray-600">Order Total</p>
             <p className="text-2xl font-bold text-gray-900">${total.toFixed(2)}</p>
@@ -412,6 +448,14 @@ const Checkout: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Error Message */}
+                {error && (
+                  <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
+                    <AlertCircle className="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                )}
+                
                 {/* Place Order Button */}
                 <button
                   type="submit"

@@ -1,18 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Heart } from 'lucide-react';
-import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 
-interface ProductCardProps {
-  product: Product;
-  className?: string;
-}
-
-const ProductCard: React.FC<ProductCardProps> = ({ product, className = '' }) => {
+const ProductCard = ({ product, className = '' }) => {
   const { addToCart } = useCart();
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart(product);

@@ -4,14 +4,14 @@ import { Search, ShoppingCart, User, Menu, X, MapPin, Heart } from 'lucide-react
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 
-const Header: React.FC = () => {
+const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
   const { getTotalItems } = useCart();
   const navigate = useNavigate();
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
@@ -67,7 +67,10 @@ const Header: React.FC = () => {
                 className="w-full px-4 py-3 pl-12 border-2 border-gray-300 rounded-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
               />
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <button type="submit" className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-yellow-400 hover:bg-yellow-500 px-6 py-2 rounded-full text-sm font-medium transition-colors">
+              <button
+                type="submit"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-yellow-400 hover:bg-yellow-500 px-6 py-2 rounded-full text-sm font-medium transition-colors"
+              >
                 Search
               </button>
             </div>
@@ -75,7 +78,7 @@ const Header: React.FC = () => {
 
           {/* Right Section */}
           <div className="flex items-center space-x-4">
-            {/* Heart Icon */}
+            {/* Reorder (Heart) */}
             <button className="hidden md:flex flex-col items-center p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Heart className="w-6 h-6 text-gray-600" />
               <span className="text-xs text-gray-600">Reorder</span>
@@ -89,19 +92,17 @@ const Header: React.FC = () => {
                   {user ? user.name.split(' ')[0] : 'Account'}
                 </span>
               </button>
-              {user && (
+
+              {/* Dropdown */}
+              {user ? (
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                   <div className="p-4 border-b border-gray-100">
                     <p className="font-medium text-gray-900">{user.name}</p>
                     <p className="text-sm text-gray-500">{user.email}</p>
                   </div>
                   <div className="py-2">
-                    <Link to="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      My Orders
-                    </Link>
-                    <Link to="/account" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Account Settings
-                    </Link>
+                    <Link to="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Orders</Link>
+                    <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Account Settings</Link>
                     <button
                       onClick={handleLogout}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -110,16 +111,11 @@ const Header: React.FC = () => {
                     </button>
                   </div>
                 </div>
-              )}
-              {!user && (
+              ) : (
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                   <div className="py-2">
-                    <Link to="/login" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Sign In
-                    </Link>
-                    <Link to="/register" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Create Account
-                    </Link>
+                    <Link to="/login" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign In</Link>
+                    <Link to="/register" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Create Account</Link>
                   </div>
                 </div>
               )}
@@ -135,12 +131,10 @@ const Header: React.FC = () => {
                   </span>
                 )}
               </div>
-              <span className="text-xs text-gray-600 hidden md:block">
-                ${getTotalItems() > 0 ? '0.00' : '0.00'}
-              </span>
+              <span className="text-xs text-gray-600 hidden md:block">${getTotalItems() > 0 ? '0.00' : '0.00'}</span>
             </Link>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
@@ -165,7 +159,7 @@ const Header: React.FC = () => {
         </form>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-200">
           <div className="px-4 py-2 space-y-2">
@@ -174,7 +168,7 @@ const Header: React.FC = () => {
             {user ? (
               <>
                 <Link to="/orders" className="block py-2 text-gray-700 hover:text-blue-600">My Orders</Link>
-                <Link to="/account" className="block py-2 text-gray-700 hover:text-blue-600">Account</Link>
+                <Link to="/profile" className="block py-2 text-gray-700 hover:text-blue-600">Account</Link>
                 <button onClick={handleLogout} className="block py-2 text-gray-700 hover:text-blue-600">Sign Out</button>
               </>
             ) : (
