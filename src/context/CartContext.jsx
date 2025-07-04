@@ -19,9 +19,23 @@ export const CartProvider = ({ children }) => {
 
   useEffect(() => {
     if (user) {
-      fetchCart();
-    } else {
-      setItems([]);
+      const syncCart = async () => {
+        // First fetch server cart
+        const serverCart = await cartAPI.getCart();
+        
+        // If server has items, use those
+        if (serverCart && serverCart.items && serverCart.items.length > 0) {
+          await fetchCart();
+        }
+        // If local cart has items and server cart is empty, sync local to server
+        else if (items.length > 0) {
+          for (const item of items) {
+            await cartAPI.addToCart(item.product.id, item.quantity);
+          }
+          await fetchCart();
+        }
+      };
+      syncCart();
     }
   }, [user]);
 
@@ -61,19 +75,20 @@ export const CartProvider = ({ children }) => {
     setIsLoading(true);
     try {
       if (user) {
-        await cartAPI.addToCart(product.id, quantity);
+        await cartAPI.addToCart(product._id || product.id, quantity);
         await fetchCart();
       } else {
         setItems((prevItems) => {
-          const existingItem = prevItems.find(item => item.product.id === product.id);
+          const productId = product._id || product.id;
+          const existingItem = prevItems.find(item => (item.product._id || item.product.id) === productId);
           if (existingItem) {
             return prevItems.map(item =>
-              item.product.id === product.id
+              (item.product._id || item.product.id) === productId
                 ? { ...item, quantity: item.quantity + quantity }
                 : item
             );
           }
-          return [...prevItems, { product, quantity }];
+          return [...prevItems, { product: {...product, id: product._id || product.id}, quantity }];
         });
       }
     } catch (error) {
@@ -90,7 +105,7 @@ export const CartProvider = ({ children }) => {
         await cartAPI.removeFromCart(productId);
         await fetchCart();
       } else {
-        setItems((prevItems) => prevItems.filter(item => item.product.id !== productId));
+        setItems((prevItems) => prevItems.filter(item => (item.product._id || item.product.id) !== productId));
       }
     } catch (error) {
       console.error('Failed to remove from cart:', error);
@@ -113,7 +128,7 @@ export const CartProvider = ({ children }) => {
       } else {
         setItems((prevItems) =>
           prevItems.map(item =>
-            item.product.id === productId ? { ...item, quantity } : item
+            (item.product._id || item.product.id) === productId ? { ...item, quantity } : item
           )
         );
       }

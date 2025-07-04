@@ -55,6 +55,13 @@ const Checkout = () => {
     e.preventDefault();
     setIsProcessing(true);
     setError(null);
+
+    // Validate cart has items
+    if (!items || items.length === 0) {
+      setError('Your cart is empty');
+      setIsProcessing(false);
+      return;
+    }
     
     try {
       // Create the order using the API

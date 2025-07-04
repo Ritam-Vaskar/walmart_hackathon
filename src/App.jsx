@@ -23,7 +23,7 @@ function App() {
             <main className="flex-1">
               <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/product/:_id" element={<ProductDetail />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />

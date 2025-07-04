@@ -9,12 +9,12 @@ const ProductCard = ({ product, className = '' }) => {
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product);
+    addToCart({...product, id: product._id});
   };
 
   return (
     <Link
-      to={`/product/${product.id}`}
+      to={`/product/${product._id}`}
       className={`group bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${className}`}
     >
       <div className="relative overflow-hidden">
