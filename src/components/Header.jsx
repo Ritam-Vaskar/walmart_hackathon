@@ -159,27 +159,144 @@ const Header = () => {
         </form>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200">
-          <div className="px-4 py-2 space-y-2">
-            <Link to="/" className="block py-2 text-gray-700 hover:text-blue-600">Home</Link>
-            <Link to="/categories" className="block py-2 text-gray-700 hover:text-blue-600">Categories</Link>
-            {user ? (
-              <>
-                <Link to="/orders" className="block py-2 text-gray-700 hover:text-blue-600">My Orders</Link>
-                <Link to="/profile" className="block py-2 text-gray-700 hover:text-blue-600">Account</Link>
-                <button onClick={handleLogout} className="block py-2 text-gray-700 hover:text-blue-600">Sign Out</button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="block py-2 text-gray-700 hover:text-blue-600">Sign In</Link>
-                <Link to="/register" className="block py-2 text-gray-700 hover:text-blue-600">Create Account</Link>
-              </>
-            )}
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setIsMobileMenuOpen(false)}></div>
+          <div className="absolute inset-y-0 left-0 max-w-full flex">
+            <div className="relative w-screen max-w-sm">
+              <div className="h-full flex flex-col bg-white shadow-xl overflow-y-scroll">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                  <h2 className="text-lg font-medium text-gray-900">Menu</h2>
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                <div className="p-4 space-y-4">
+                  <Link 
+                    to="/" 
+                    className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Home
+                  </Link>
+                  <Link 
+                    to="/products" 
+                    className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Products
+                  </Link>
+                  <Link 
+                    to="/categories" 
+                    className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Categories
+                  </Link>
+                  <Link 
+                    to="/deals" 
+                    className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Deals
+                  </Link>
+                  <Link 
+                    to="/cart" 
+                    className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Cart
+                  </Link>
+                  {user ? (
+                    <>
+                      <Link 
+                        to="/orders" 
+                        className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Orders
+                      </Link>
+                      <Link 
+                        to="/profile" 
+                        className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Profile
+                      </Link>
+                      <button 
+                        onClick={() => {
+                          handleLogout();
+                          setIsMobileMenuOpen(false);
+                        }} 
+                        className="block w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 font-medium text-red-600"
+                      >
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link 
+                        to="/login" 
+                        className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Login
+                      </Link>
+                      <Link 
+                        to="/register" 
+                        className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Register
+                      </Link>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
+      {/* Navigation Bar */}
+      <div className="bg-blue-700 text-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center h-12">
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="md:hidden mr-4 text-white"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            
+            <div className="hidden md:flex items-center space-x-8">
+              <Link to="/" className="text-white hover:text-blue-200 font-medium py-3">
+                Home
+              </Link>
+              <Link to="/products" className="text-white hover:text-blue-200 font-medium py-3">
+                Products
+              </Link>
+              <Link to="/categories" className="text-white hover:text-blue-200 font-medium py-3">
+                Categories
+              </Link>
+              <Link to="/deals" className="text-white hover:text-blue-200 font-medium py-3">
+                Deals
+              </Link>
+              <Link to="/cart" className="text-white hover:text-blue-200 font-medium py-3">
+                Cart
+              </Link>
+              {user && (
+                <Link to="/orders" className="text-white hover:text-blue-200 font-medium py-3">
+                  Orders
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </header>
   );
 };
