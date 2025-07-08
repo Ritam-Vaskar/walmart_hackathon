@@ -47,9 +47,14 @@ const Header = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-xl">
-              W
-            </div>
+           <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
+  <img
+    src="https://cdn-icons-png.flaticon.com/512/5977/5977595.png"
+    alt="Walmart"
+    className="w-8 h-8"
+  />
+</div>
+
             <div className="hidden sm:block">
               <div className="text-2xl font-bold text-blue-600">Walmart</div>
               <div className="text-xs text-gray-500 -mt-1">Save Money. Live Better.</div>
