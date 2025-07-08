@@ -15,17 +15,9 @@ const Deals = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // Fetch all products
         const productsData = await productsAPI.getProducts();
-        
-        // Filter products with originalPrice (products on sale)
-        const dealsData = productsData.filter(product => 
-          product.originalPrice && product.originalPrice > product.price
-        );
-        
+        const dealsData = productsData.filter(product => product.originalPrice && product.originalPrice > product.price);
         setDealProducts(dealsData);
-        
-        // Fetch categories
         const categoriesData = await productsAPI.getCategories();
         setCategories(categoriesData);
       } catch (err) {
@@ -35,21 +27,17 @@ const Deals = () => {
         setIsLoading(false);
       }
     };
-    
     fetchData();
   }, []);
 
-  // Filter deals by category
   const filteredDeals = activeTab === 'all' 
     ? dealProducts 
     : dealProducts.filter(product => product.category === activeTab);
 
-  // Calculate discount percentage
   const calculateDiscount = (original, current) => {
     return Math.round(((original - current) / original) * 100);
   };
 
-  // Show loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -61,7 +49,6 @@ const Deals = () => {
     );
   }
 
-  // Show error state
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -115,20 +102,15 @@ const Deals = () => {
           <div className="flex space-x-2 min-w-max pb-2">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === 'all' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
             >
               All Deals
             </button>
-            
-            {categories.map((category) => (
+            {categories.map(category => (
               <button
                 key={category._id}
                 onClick={() => setActiveTab(category.name)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === category.name 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === category.name ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
               >
                 {category.name}
               </button>
@@ -142,23 +124,18 @@ const Deals = () => {
             <div className="text-2xl font-bold text-gray-900">{dealProducts.length}</div>
             <div className="text-sm text-gray-600">Total Deals</div>
           </div>
-          
           <div className="text-center px-4 py-2">
             <div className="text-2xl font-bold text-gray-900">
-              {Math.max(...dealProducts.map(p => 
-                calculateDiscount(p.originalPrice, p.price)
-              ))}%
+              {Math.max(...dealProducts.map(p => calculateDiscount(p.originalPrice, p.price)))}%
             </div>
             <div className="text-sm text-gray-600">Max Discount</div>
           </div>
-          
           <div className="text-center px-4 py-2">
             <div className="text-2xl font-bold text-gray-900">
               ${Math.min(...dealProducts.map(p => p.price)).toFixed(2)}
             </div>
             <div className="text-sm text-gray-600">Lowest Price</div>
           </div>
-          
           <div className="text-center px-4 py-2">
             <div className="text-2xl font-bold text-red-600">Limited Time</div>
             <div className="text-sm text-gray-600">Hurry Up!</div>
@@ -188,13 +165,20 @@ const Deals = () => {
                 {filteredDeals.length} {filteredDeals.length === 1 ? 'deal' : 'deals'} available
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-              {filteredDeals.map((product) => (
+              {filteredDeals.map(product => (
                 <div key={product._id} className="relative">
+                  {/* Discount % badge (top-left) */}
                   <div className="absolute top-0 left-0 z-10 bg-red-600 text-white px-3 py-1 rounded-br-lg font-bold">
                     {calculateDiscount(product.originalPrice, product.price)}% OFF
                   </div>
+
+                  {/* Save amount badge (top-right) */}
+                  <div className="absolute top-0 right-0 z-10 bg-red-500 text-white px-3 py-1 rounded-bl-lg font-semibold text-sm">
+                    SAVE ${Math.round(product.originalPrice - product.price)}
+                  </div>
+
                   <ProductCard product={product} />
                 </div>
               ))}
@@ -202,14 +186,13 @@ const Deals = () => {
           </div>
         )}
 
-        {/* Deal Categories */}
+        {/* Shop Deals by Category */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Shop Deals by Category</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {categories.map((category) => {
+            {categories.map(category => {
               const categoryDeals = dealProducts.filter(p => p.category === category.name);
               if (categoryDeals.length === 0) return null;
-              
               return (
                 <Link 
                   key={category._id} 
@@ -223,9 +206,7 @@ const Deals = () => {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-red-600 text-white text-center py-1 text-sm font-medium">
-                      Up to {Math.max(...categoryDeals.map(p => 
-                        calculateDiscount(p.originalPrice, p.price)
-                      ))}% Off
+                      Up to {Math.max(...categoryDeals.map(p => calculateDiscount(p.originalPrice, p.price)))}% Off
                     </div>
                   </div>
                   <div className="p-4">
@@ -240,38 +221,6 @@ const Deals = () => {
                 </Link>
               );
             }).filter(Boolean)}
-          </div>
-        </div>
-
-        {/* Deal Information */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">About Our Deals</h2>
-          <div className="text-gray-600 space-y-4">
-            <p>
-              At Walmart, we're committed to helping you save money and live better. Our deals and clearance 
-              items offer significant savings on top-quality products across all departments.
-            </p>
-            <p>
-              Deals are available for a limited time and while supplies last. Check back frequently as 
-              we update our deals regularly with new savings opportunities.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-              <div className="border border-gray-200 rounded-lg p-4 text-center">
-                <Tag className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-                <h3 className="font-medium text-gray-900 mb-1">Clearance Items</h3>
-                <p className="text-sm">Final markdowns on quality products</p>
-              </div>
-              <div className="border border-gray-200 rounded-lg p-4 text-center">
-                <Clock className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-                <h3 className="font-medium text-gray-900 mb-1">Flash Deals</h3>
-                <p className="text-sm">Limited-time offers at incredible prices</p>
-              </div>
-              <div className="border border-gray-200 rounded-lg p-4 text-center">
-                <ChevronRight className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-                <h3 className="font-medium text-gray-900 mb-1">Daily Deals</h3>
-                <p className="text-sm">New deals every day across all categories</p>
-              </div>
-            </div>
           </div>
         </div>
       </div>

@@ -26,11 +26,11 @@ const ProductCard = ({ product, className = '' }) => {
         <button className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-gray-50">
           <Heart className="w-4 h-4 text-gray-600" />
         </button>
-        {product.originalPrice && (
+        {/* {product.originalPrice && (
           <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold">
             SAVE ${(product.originalPrice - product.price).toFixed(2)}
           </div>
-        )}
+        )} */}
       </div>
 
       <div className="p-4">
