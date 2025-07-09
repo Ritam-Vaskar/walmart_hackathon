@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { wishlistAPI } from '../services/WishlistAPI';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -87,6 +86,26 @@ export const cartAPI = {
   },
   clearCart: async () => {
     const response = await api.delete('/cart');
+    return response.data;
+  },
+};
+
+// Wishlist API
+export const wishlistAPI = {
+  getWishlist: async () => {
+    const response = await api.get('/wishlist');
+    return response.data;
+  },
+  addToWishlist: async (productId) => {
+    const response = await api.post(`/wishlist/add/${productId}`);
+    return response.data;
+  },
+  removeFromWishlist: async (productId) => {
+    const response = await api.delete(`/wishlist/remove/${productId}`);
+    return response.data;
+  },
+  clearWishlist: async () => {
+    const response = await api.delete('/wishlist');
     return response.data;
   },
 };

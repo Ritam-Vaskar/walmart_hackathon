@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Star, Minus, Plus, Heart, Share2, Truck, Shield, RotateCcw } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useCart } from '../context/CartContext';
-import { productsAPI } from '../services/api';
+import { productsAPI, wishlistAPI } from '../services/api';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -49,40 +48,28 @@ const ProductDetail = () => {
   }, [product]);
 
   const checkWishlist = async () => {
-  try {
-    const response = await axios.get('/api/wishlist', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('walmart_token')}`,
-      },
-    });
-    const wishlistProducts = Array.isArray(response.data) ? response.data : [];
-    const found = wishlistProducts.some(item => item._id === product._id);
-    setIsWishlisted(found);
-  } catch (error) {
-    console.error('Error checking wishlist:', error);
-  }
-};
-
+    try {
+      const wishlistData = await wishlistAPI.getWishlist();
+      const wishlistProducts = Array.isArray(wishlistData) ? wishlistData : [];
+      const found = wishlistProducts.some(item => item._id === product._id);
+      setIsWishlisted(found);
+    } catch (error) {
+      console.error('Error checking wishlist:', error);
+    }
+  };
 
   const toggleWishlist = async () => {
     try {
       if (isWishlisted) {
-        await axios.delete(`/api/wishlist/remove/${product._id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('walmart_token')}`,
-          },
-        });
+        await wishlistAPI.removeFromWishlist(product._id);
         toast.success('Removed from wishlist');
       } else {
-        await axios.post(`/api/wishlist/add/${product._id}`, {}, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('walmart_token')}`,
-          },
-        });
+        await wishlistAPI.addToWishlist(product._id);
         toast.success('Added to wishlist');
       }
       setIsWishlisted(!isWishlisted);
     } catch (error) {
+      console.error('Wishlist action failed:', error);
       toast.error('Wishlist action failed');
     }
   };
@@ -137,7 +124,7 @@ const ProductDetail = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center bg-white p-8 rounded-lg shadow-md max-w-md">
           <div className="text-yellow-500 text-5xl mb-4">🔍</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h2>
+          <h2 className="2xl font-bold text-gray-900 mb-4">Product Not Found</h2>
           <p className="text-gray-600 mb-6">The product you're looking for doesn't exist or has been removed.</p>
           <button
             onClick={() => navigate('/')}
