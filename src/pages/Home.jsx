@@ -161,34 +161,36 @@ const Home = () => {
       </section>
 
       {/* Categories Section */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Shop by Category</h2>
-            <p className="text-gray-600 text-lg">Find exactly what you're looking for</p>
+    <section className="py-16">
+  <div className="max-w-7xl mx-auto px-4">
+    <div className="text-center mb-12">
+      <h2 className="text-3xl font-bold text-gray-900 mb-4">Shop by Category</h2>
+      <p className="text-gray-600 text-lg">Find exactly what you're looking for</p>
+    </div>
+
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+      {categories.map((category) => (
+        <Link
+          key={category._id}
+          to={`/products?category=${encodeURIComponent(category.name)}`}
+          className="group bg-white rounded-xl p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-2 border border-gray-100"
+        >
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
+            <img
+              src={category.image}
+              alt={category.name}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 rounded-full"
+            />
           </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {categories.map((category) => {
-              const IconComponent = Icons[category.icon];
-              return (
-                <Link
-                  key={category.id}
-                  to={`/category/${category.id}`}
-                  className="group bg-white rounded-xl p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-2 border border-gray-100"
-                >
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    {IconComponent && <IconComponent className="w-8 h-8 text-white" />}
-                  </div>
-                  <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                    {category.name}
-                  </h3>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+          <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+            {category.name}
+          </h3>
+        </Link>
+      ))}
+    </div>
+  </div>
+</section>
+
 
       {/* Deals Section */}
       <section className="bg-gradient-to-r from-red-500 to-pink-600 text-white py-16">

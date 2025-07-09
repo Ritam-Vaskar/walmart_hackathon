@@ -3,12 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Search, ShoppingCart, User, Menu, X, MapPin, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
-  const { getTotalItems } = useCart();
+  const { getTotalItems: getCartItems } = useCart();
+  const { getTotalItems: getWishlistItems } = useWishlist();
   const navigate = useNavigate();
 
   const handleSearch = (e) => {
@@ -28,13 +30,11 @@ const Header = () => {
       {/* Top Bar */}
       <div className="bg-blue-600 text-white text-sm py-1">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <span className="flex items-center">
-              <MapPin className="w-4 h-4 mr-1" />
-              How do you want your items?
-            </span>
-          </div>
-          <div className="hidden md:flex items-center space-x-4">
+          <span className="flex items-center space-x-1">
+            <MapPin className="w-4 h-4" />
+            <span>How do you want your items?</span>
+          </span>
+          <div className="hidden md:flex space-x-4">
             <span>Free shipping, arrives in 3+ days</span>
             <span>|</span>
             <span>Get $5 off with Walmart+</span>
@@ -47,14 +47,13 @@ const Header = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-           <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
-  <img
-    src="https://cdn-icons-png.flaticon.com/512/5977/5977595.png"
-    alt="Walmart"
-    className="w-8 h-8"
-  />
-</div>
-
+            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/5977/5977595.png"
+                alt="Walmart"
+                className="w-8 h-8"
+              />
+            </div>
             <div className="hidden sm:block">
               <div className="text-2xl font-bold text-blue-600">Walmart</div>
               <div className="text-xs text-gray-500 -mt-1">Save Money. Live Better.</div>
@@ -83,11 +82,17 @@ const Header = () => {
 
           {/* Right Section */}
           <div className="flex items-center space-x-4">
-            {/* Reorder (Heart) */}
-            <button className="hidden md:flex flex-col items-center p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            {/* Wishlist */}
+            <Link to="/wishlist" className="relative hidden md:flex flex-col items-center p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Heart className="w-6 h-6 text-gray-600" />
-              <span className="text-xs text-gray-600">Reorder</span>
-            </button>
+              <span className="text-xs text-gray-600">Wishlist</span>
+
+              {getWishlistItems() > 0 && (
+                <span className="absolute -top-2 -right-2 bg-yellow-400 text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {getWishlistItems()}
+                </span>
+              )}
+            </Link>
 
             {/* Account */}
             <div className="relative group">
@@ -98,45 +103,44 @@ const Header = () => {
                 </span>
               </button>
 
-              {/* Dropdown */}
-              {user ? (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  <div className="p-4 border-b border-gray-100">
-                    <p className="font-medium text-gray-900">{user.name}</p>
-                    <p className="text-sm text-gray-500">{user.email}</p>
-                  </div>
-                  <div className="py-2">
-                    <Link to="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Orders</Link>
-                    <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Account Settings</Link>
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                {user ? (
+                  <>
+                    <div className="p-4 border-b border-gray-100">
+                      <p className="font-medium text-gray-900">{user.name}</p>
+                      <p className="text-sm text-gray-500">{user.email}</p>
+                    </div>
+                    <div className="py-2">
+                      <Link to="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Orders</Link>
+                      <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Account Settings</Link>
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  </>
+                ) : (
                   <div className="py-2">
                     <Link to="/login" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign In</Link>
                     <Link to="/register" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Create Account</Link>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             {/* Cart */}
             <Link to="/cart" className="relative flex flex-col items-center p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <div className="relative">
                 <ShoppingCart className="w-6 h-6 text-gray-600" />
-                {getTotalItems() > 0 && (
+                {getCartItems() > 0 && (
                   <span className="absolute -top-2 -right-2 bg-yellow-400 text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {getTotalItems()}
+                    {getCartItems()}
                   </span>
                 )}
               </div>
-              <span className="text-xs text-gray-600 hidden md:block">${getTotalItems() > 0 ? '0.00' : '0.00'}</span>
+              <span className="text-xs text-gray-600 hidden md:block">$0.00</span>
             </Link>
 
             {/* Mobile Menu Toggle */}
@@ -164,139 +168,22 @@ const Header = () => {
         </form>
       </div>
 
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
-          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setIsMobileMenuOpen(false)}></div>
-          <div className="absolute inset-y-0 left-0 max-w-full flex">
-            <div className="relative w-screen max-w-sm">
-              <div className="h-full flex flex-col bg-white shadow-xl overflow-y-scroll">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-                  <h2 className="text-lg font-medium text-gray-900">Menu</h2>
-                  <button
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-                <div className="p-4 space-y-4">
-                  <Link 
-                    to="/" 
-                    className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Home
-                  </Link>
-                  <Link 
-                    to="/products" 
-                    className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Products
-                  </Link>
-                  <Link 
-                    to="/categories" 
-                    className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Categories
-                  </Link>
-                  <Link 
-                    to="/deals" 
-                    className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Deals
-                  </Link>
-                  <Link 
-                    to="/cart" 
-                    className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Cart
-                  </Link>
-                  {user ? (
-                    <>
-                      <Link 
-                        to="/orders" 
-                        className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        Orders
-                      </Link>
-                      <Link 
-                        to="/profile" 
-                        className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        Profile
-                      </Link>
-                      <button 
-                        onClick={() => {
-                          handleLogout();
-                          setIsMobileMenuOpen(false);
-                        }} 
-                        className="block w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 font-medium text-red-600"
-                      >
-                        Logout
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <Link 
-                        to="/login" 
-                        className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        Login
-                      </Link>
-                      <Link 
-                        to="/register" 
-                        className="block px-4 py-2 rounded-md hover:bg-gray-100 font-medium"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        Register
-                      </Link>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
       {/* Navigation Bar */}
       <div className="bg-blue-700 text-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center h-12">
-            <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden mr-4 text-white"
-            >
+            <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden mr-4 text-white">
               <Menu className="w-6 h-6" />
             </button>
-            
             <div className="hidden md:flex items-center space-x-8">
-              <Link to="/" className="text-white hover:text-blue-200 font-medium py-3">
-                Home
-              </Link>
-              <Link to="/products" className="text-white hover:text-blue-200 font-medium py-3">
-                Products
-              </Link>
-              <Link to="/categories" className="text-white hover:text-blue-200 font-medium py-3">
-                Categories
-              </Link>
-              <Link to="/deals" className="text-white hover:text-blue-200 font-medium py-3">
-                Deals
-              </Link>
-              <Link to="/cart" className="text-white hover:text-blue-200 font-medium py-3">
-                Cart
-              </Link>
+              <Link to="/" className="text-white hover:text-blue-200 font-medium py-3">Home</Link>
+              <Link to="/products" className="text-white hover:text-blue-200 font-medium py-3">Products</Link>
+              <Link to="/categories" className="text-white hover:text-blue-200 font-medium py-3">Categories</Link>
+              <Link to="/deals" className="text-white hover:text-blue-200 font-medium py-3">Deals</Link>
+              <Link to="/wishlist" className="text-white hover:text-blue-200 font-medium py-3">Wishlist</Link>
+              <Link to="/cart" className="text-white hover:text-blue-200 font-medium py-3">Cart</Link>
               {user && (
-                <Link to="/orders" className="text-white hover:text-blue-200 font-medium py-3">
-                  Orders
-                </Link>
+                <Link to="/orders" className="text-white hover:text-blue-200 font-medium py-3">Orders</Link>
               )}
             </div>
           </div>

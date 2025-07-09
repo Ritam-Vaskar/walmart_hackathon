@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Star, Minus, Plus, Heart, Share2, Truck, Shield, RotateCcw } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { useCart } from '../context/CartContext';
 import { productsAPI } from '../services/api';
 
@@ -8,26 +10,25 @@ const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
     const fetchProductData = async () => {
       if (!id) return;
-      
       setIsLoading(true);
       setError(null);
       try {
-        // Fetch product and related products in parallel
         const [productData, relatedProductsData] = await Promise.all([
           productsAPI.getProductById(id),
           productsAPI.getRelatedProducts(id)
         ]);
-        
         setProduct(productData);
         setRelatedProducts(relatedProductsData);
       } catch (err) {
@@ -37,15 +38,71 @@ const ProductDetail = () => {
         setIsLoading(false);
       }
     };
-    
+
     fetchProductData();
-    // Reset quantity when product changes
     setQuantity(1);
-    // Reset selected image when product changes
     setSelectedImage(0);
   }, [id]);
 
-  // Show loading state
+  useEffect(() => {
+    if (product) checkWishlist();
+  }, [product]);
+
+  const checkWishlist = async () => {
+  try {
+    const response = await axios.get('/api/wishlist', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('walmart_token')}`,
+      },
+    });
+    const wishlistProducts = Array.isArray(response.data) ? response.data : [];
+    const found = wishlistProducts.some(item => item._id === product._id);
+    setIsWishlisted(found);
+  } catch (error) {
+    console.error('Error checking wishlist:', error);
+  }
+};
+
+
+  const toggleWishlist = async () => {
+    try {
+      if (isWishlisted) {
+        await axios.delete(`/api/wishlist/remove/${product._id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('walmart_token')}`,
+          },
+        });
+        toast.success('Removed from wishlist');
+      } else {
+        await axios.post(`/api/wishlist/add/${product._id}`, {}, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('walmart_token')}`,
+          },
+        });
+        toast.success('Added to wishlist');
+      }
+      setIsWishlisted(!isWishlisted);
+    } catch (error) {
+      toast.error('Wishlist action failed');
+    }
+  };
+
+  const handleAddToCart = () => {
+    addToCart(product, quantity);
+    toast.success('Added to cart');
+  };
+
+  const handleQuantityChange = (change) => {
+    const newQuantity = quantity + change;
+    if (newQuantity >= 1 && newQuantity <= 10) {
+      setQuantity(newQuantity);
+    }
+  };
+
+  const productImages = product?.image
+    ? [product.image, product.image, product.image, product.image]
+    : [];
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -57,7 +114,6 @@ const ProductDetail = () => {
     );
   }
 
-  // Show error state
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -76,7 +132,6 @@ const ProductDetail = () => {
     );
   }
 
-  // Show not found state
   if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -95,31 +150,9 @@ const ProductDetail = () => {
     );
   }
 
-  const handleAddToCart = () => {
-    addToCart(product, quantity);
-    // You could add a toast notification here
-  };
-
-  const handleQuantityChange = (change) => {
-    const newQuantity = quantity + change;
-    if (newQuantity >= 1 && newQuantity <= 10) {
-      setQuantity(newQuantity);
-    }
-  };
-
-  // Create an array of product images (in a real app, these would come from the API)
-  // For now, we'll just use the same image multiple times as a placeholder
-  const productImages = product?.image ? [
-    product.image,
-    product.image,
-    product.image,
-    product.image
-  ] : [];
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
           <button onClick={() => navigate('/')} className="hover:text-blue-600">Home</button>
           <span>/</span>
@@ -165,8 +198,11 @@ const ProductDetail = () => {
                   {product.brand}
                 </span>
                 <div className="flex items-center space-x-2">
-                  <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                    <Heart className="w-5 h-5 text-gray-600" />
+                  <button
+                    onClick={toggleWishlist}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <Heart className={`w-5 h-5 ${isWishlisted ? 'text-red-500 fill-current' : 'text-gray-600'}`} />
                   </button>
                   <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                     <Share2 className="w-5 h-5 text-gray-600" />
@@ -194,14 +230,10 @@ const ProductDetail = () => {
               </div>
 
               <div className="flex items-center space-x-4 mb-6">
-                <span className="text-4xl font-bold text-gray-900">
-                  ${product.price.toFixed(2)}
-                </span>
+                <span className="text-4xl font-bold text-gray-900">${product.price.toFixed(2)}</span>
                 {product.originalPrice && (
                   <>
-                    <span className="text-xl text-gray-500 line-through">
-                      ${product.originalPrice.toFixed(2)}
-                    </span>
+                    <span className="text-xl text-gray-500 line-through">${product.originalPrice.toFixed(2)}</span>
                     <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-medium">
                       Save ${(product.originalPrice - product.price).toFixed(2)}
                     </span>
@@ -211,7 +243,6 @@ const ProductDetail = () => {
 
               <p className="text-gray-700 mb-6 leading-relaxed">{product.description}</p>
 
-              {/* Features */}
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-900 mb-3">Key Features:</h3>
                 <ul className="space-y-2">
@@ -224,18 +255,14 @@ const ProductDetail = () => {
                 </ul>
               </div>
 
-              {/* Stock Status */}
               <div className="mb-6">
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  product.inStock 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
+                  product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                 }`}>
                   {product.inStock ? '✓ In Stock' : '✗ Out of Stock'}
                 </span>
               </div>
 
-              {/* Quantity and Add to Cart */}
               <div className="flex items-center space-x-4 mb-8">
                 <div className="flex items-center border border-gray-300 rounded-lg">
                   <button
@@ -304,8 +331,8 @@ const ProductDetail = () => {
             {relatedProducts.length > 0 ? (
               relatedProducts.slice(0, 4).map(relatedProduct => (
                 <div
-                  key={relatedProduct.id}
-                  onClick={() => navigate(`/product/${relatedProduct.id}`)}
+                  key={relatedProduct._id}
+                  onClick={() => navigate(`/product/${relatedProduct._id}`)}
                   className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow cursor-pointer"
                 >
                   <img
