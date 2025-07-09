@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Filter, SlidersHorizontal, ChevronDown, ChevronUp, X, Check } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import VoiceSearchBar from '../components/VoiceSearchBar';
 import { productsAPI } from '../services/api';
 
 const Products = () => {
@@ -122,13 +123,18 @@ const Products = () => {
     <div className="bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Page Header */}
-        <div className="mb-8">
+        <div className="mb-4">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             {categoryParam ? `${categoryParam}` : 'All Products'}
           </h1>
           <p className="text-gray-600">
             {products.length} {products.length === 1 ? 'product' : 'products'} available
           </p>
+        </div>
+        
+        {/* Voice Search Bar */}
+        <div className="mb-6">
+          <VoiceSearchBar className="w-full" />
         </div>
 
         {/* Mobile Filter Button */}

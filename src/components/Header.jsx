@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, ShoppingCart, User, Menu, X, MapPin, Heart } from 'lucide-react';
+import VoiceAssistantButton from './VoiceAssistantButton';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -82,6 +83,9 @@ const Header = () => {
 
           {/* Right Section */}
           <div className="flex items-center space-x-4">
+            {/* Voice Assistant */}
+            <VoiceAssistantButton />
+            
             {/* Wishlist */}
             <Link to="/wishlist" className="relative hidden md:flex flex-col items-center p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Heart className="w-6 h-6 text-gray-600" />

@@ -3,8 +3,10 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
+import { VoiceAssistantProvider } from './context/VoiceAssistantContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import VoiceAssistant from './components/VoiceAssistant';
 import Home from './pages/Home';
 import ProductDetail from './pages/ProductDetail';
 import WishlistPage from './pages/WishlistPage';
@@ -37,6 +39,7 @@ function AppContent() {
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1">
+          <VoiceAssistant />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<Products />} />
@@ -64,9 +67,11 @@ function App() {
     <AuthProvider>
       <CartProvider>
         <WishlistProvider>
-        <Router>
-          <AppContent />
-        </Router>
+          <VoiceAssistantProvider>
+            <Router>
+              <AppContent />
+            </Router>
+          </VoiceAssistantProvider>
         </WishlistProvider>
       </CartProvider>
     </AuthProvider>
