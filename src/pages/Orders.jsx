@@ -110,6 +110,26 @@ const Orders = () => {
     }
   };
 
+  // Helper function to safely get product data
+  const getProductData = (item) => {
+    if (!item || !item.product) {
+      return {
+        id: 'unknown',
+        name: 'Product unavailable',
+        brand: 'Unknown brand',
+        price: 0,
+        image: '/api/placeholder/64/64' // Default placeholder image
+      };
+    }
+    return {
+      id: item.product.id || 'unknown',
+      name: item.product.name || 'Product unavailable',
+      brand: item.product.brand || 'Unknown brand',
+      price: item.product.price || 0,
+      image: item.product.image || '/api/placeholder/64/64'
+    };
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4">
@@ -156,7 +176,7 @@ const Orders = () => {
                       <div className="flex items-center space-x-2">
                         {getStatusIcon(order.status)}
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                          {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Unknown'}
                         </span>
                       </div>
                       <div className="text-sm text-gray-600">
@@ -165,10 +185,10 @@ const Orders = () => {
                     </div>
                     <div className="flex items-center space-x-6 text-sm text-gray-600">
                       <div>
-                        <span className="font-medium">Order Date:</span> {new Date(order.orderDate).toLocaleDateString()}
+                        <span className="font-medium">Order Date:</span> {order.orderDate ? new Date(order.orderDate).toLocaleDateString() : 'Unknown'}
                       </div>
                       <div>
-                        <span className="font-medium">Total:</span> ${order.total.toFixed(2)}
+                        <span className="font-medium">Total:</span> ${order.total ? order.total.toFixed(2) : '0.00'}
                       </div>
                       <button className="text-blue-600 hover:text-blue-700 font-medium flex items-center">
                         <Eye className="w-4 h-4 mr-1" />
@@ -181,30 +201,42 @@ const Orders = () => {
                 {/* Order Items */}
                 <div className="p-6">
                   <div className="space-y-4">
-                    {order.items.map((item) => (
-                      <div key={item.product.id} className="flex items-center space-x-4">
-                        <img
-                          src={item.product.image}
-                          alt={item.product.name}
-                          className="w-16 h-16 object-cover rounded-lg border border-gray-200"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <Link
-                            to={`/product/${item.product.id}`}
-                            className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
-                          >
-                            {item.product.name}
-                          </Link>
-                          <p className="text-gray-600 text-sm mt-1">{item.product.brand}</p>
-                          <p className="text-gray-600 text-sm">Quantity: {item.quantity}</p>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-medium text-gray-900">
-                            ${(item.product.price * item.quantity).toFixed(2)}
+                    {order.items && order.items.length > 0 ? (
+                      order.items.map((item, index) => {
+                        const product = getProductData(item);
+                        return (
+                          <div key={product.id + '-' + index} className="flex items-center space-x-4">
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                              onError={(e) => {
+                                e.target.src = '/api/placeholder/64/64';
+                              }}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <Link
+                                to={`/product/${product.id}`}
+                                className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                              >
+                                {product.name}
+                              </Link>
+                              <p className="text-gray-600 text-sm mt-1">{product.brand}</p>
+                              <p className="text-gray-600 text-sm">Quantity: {item.quantity || 1}</p>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-medium text-gray-900">
+                                ${(product.price * (item.quantity || 1)).toFixed(2)}
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-center py-4 text-gray-500">
+                        No items found for this order
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
 

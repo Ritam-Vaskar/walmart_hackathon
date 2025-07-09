@@ -22,6 +22,8 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+export { api };
+
 // Auth API
 export const authAPI = {
   register: async (name, email, password) => {

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { MessageCircle, Send, X, ShoppingBag, Calendar, Award } from 'lucide-react';
+import { api } from '../services/api';
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,26 +28,14 @@ const Chatbot = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chatbot/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}`
-        },
-        body: JSON.stringify({ message: userMessage })
-      });
+      const response = await api.post('/chatbot/chat', { message: userMessage });
+      const data = response.data;
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessages(prev => [...prev, { 
-          text: data.message, 
-          sender: 'bot',
-          recommendations: data.recommendations 
-        }]);
-      } else {
-        throw new Error(data.error);
-      }
+      setMessages(prev => [...prev, { 
+        text: data.message, 
+        sender: 'bot',
+        recommendations: data.recommendations 
+      }]);
     } catch (error) {
       setMessages(prev => [...prev, { 
         text: 'Sorry, I encountered an error. Please try again.', 
@@ -76,7 +65,7 @@ const Chatbot = () => {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 w-96 h-[600px] bg-white rounded-lg shadow-xl flex flex-col">
+    <div className="fixed bottom-4 right-4 w-96 h-[600px] bg-white rounded-lg shadow-xl flex flex-col z-50">
       {/* Header */}
       <div className="p-4 bg-blue-600 text-white rounded-t-lg flex justify-between items-center">
         <h3 className="font-semibold">Shopping Assistant</h3>
