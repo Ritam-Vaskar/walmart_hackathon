@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import Chatbot from './components/Chatbot';
 import Home from './pages/Home';
 import ProductDetail from './pages/ProductDetail';
 import Products from './pages/Products';
@@ -48,6 +49,7 @@ function AppContent() {
           </Routes>
         </main>
         <Footer />
+        <Chatbot />
       </div>
     </>
   );
