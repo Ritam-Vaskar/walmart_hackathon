@@ -26,7 +26,7 @@ export const VoiceAssistantProvider = ({ children }) => {
   const { addToCart } = useCart();
   
   const recognitionRef = useRef(null);
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  const API_URL = import.meta.env.VITE_API_URL ;
   
   // Initialize speech recognition
   useEffect(() => {
@@ -109,7 +109,7 @@ export const VoiceAssistantProvider = ({ children }) => {
     setIsProcessing(true);
     try {
       // Send the voice command to the backend for processing
-      const response = await axios.post(`${API_URL}/ai/chat`, {
+      const response = await axios.post(`${API_URL}/chat`, {
         message: command,
         userId: user?.id
       });
@@ -139,7 +139,7 @@ export const VoiceAssistantProvider = ({ children }) => {
     
     try {
       // Send the text command to the backend for processing
-      const response = await axios.post(`${API_URL}/ai/chat`, {
+      const response = await axios.post(`${API_URL}/chat`, {
         message: command,
         userId: user?.id
       });
