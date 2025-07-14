@@ -126,4 +126,17 @@ export const ordersAPI = {
   },
 };
 
+// Snack Bucket API
+export const snackBucketAPI = {
+  getDebugInfo: async () => {
+    const response = await api.get('/snack-bucket/debug-products');
+    return response.data;
+  },
+  getRecommendation: async (prompt) => {
+    const response = await api.post('/snack-bucket/recommend', { prompt });
+    return response.data;
+  },
+};
+
+
 export default api;

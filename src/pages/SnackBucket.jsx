@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
+import { snackBucketAPI } from '../services/api';
 import ProductCard from '../components/ProductCard';
 import api from '../services/api';
 import {
@@ -35,15 +36,16 @@ const SnackBucket = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
 
   // Enhanced debug function using axios
-  const getDebugInfo = async () => {
-    try {
-      const response = await api.get('/snack-bucket/debug-products');
-      setDebugInfo(response.data);
-    } catch (error) {
-      console.error('Error getting debug info:', error);
-      toast.error(error.response?.data?.message || 'Failed to fetch database information');
-    }
-  };
+const getDebugInfo = async () => {
+  try {
+    const data = await snackBucketAPI.getDebugInfo();
+    setDebugInfo(data);
+  } catch (error) {
+    console.error('Error getting debug info:', error);
+    toast.error(error.response?.data?.message || 'Failed to fetch database information');
+  }
+};
+
 
   const handleVoiceInput = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -95,34 +97,32 @@ const SnackBucket = () => {
 
   // Enhanced recommendation function with custom prompt using axios
   const getRecommendation = async () => {
-    if (!customPrompt.trim()) {
-      toast.error('Please enter a prompt to generate recommendations');
-      return;
-    }
+  if (!customPrompt.trim()) {
+    toast.error('Please enter a prompt to generate recommendations');
+    return;
+  }
 
-    setLoading(true);
-    setRecommendation(null);
+  setLoading(true);
+  setRecommendation(null);
 
-    try {
-      const response = await api.post('/snack-bucket/recommend', {
-        prompt: customPrompt.trim()
-      });
+  try {
+    const { bucket } = await snackBucketAPI.getRecommendation(customPrompt.trim());
+    setRecommendation(bucket);
+    setAnimateCards(true);
 
-      setRecommendation(response.data.bucket);
-      setAnimateCards(true);
+    // Reset animation after delay
+    setTimeout(() => setAnimateCards(false), 600);
 
-      // Reset animation after delay
-      setTimeout(() => setAnimateCards(false), 600);
+    toast.success('🎉 Perfect recommendations generated for your request!');
+  } catch (error) {
+    console.error('Error getting recommendations:', error);
+    const errorMessage = error.response?.data?.message || 'Failed to get recommendations';
+    toast.error(errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
 
-      toast.success('🎉 Perfect recommendations generated for your request!');
-    } catch (error) {
-      console.error('Error getting recommendations:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to get recommendations';
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Enhanced add all to cart function
   const addAllToCart = async () => {
