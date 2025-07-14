@@ -9,7 +9,11 @@ import {
   Truck,
   Shield,
   RotateCcw,
+  Box,
+  Smartphone
 } from "lucide-react";
+import ARTryOn from '../components/ARTryOn';
+import { checkDeviceARCapabilities, fetchProductARModel } from '../services/arService';
 import { toast } from "react-toastify";
 import { useCart } from "../context/CartContext";
 import { productsAPI, wishlistAPI } from "../services/api";
@@ -27,6 +31,10 @@ const ProductDetail = () => {
   const [error, setError] = useState(null);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [arSupported, setArSupported] = useState(false);
+  const [showARView, setShowARView] = useState(false);
+  const [arModelUrl, setArModelUrl] = useState(null);
+  const [arLoading, setArLoading] = useState(false);
 
   const handleInquiry = async () => {
     if (!phoneNumber.trim()) {
@@ -47,7 +55,7 @@ const ProductDetail = () => {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success("You’ll get a call from our AI assistant shortly!");
+        toast.success("You'll get a call from our AI assistant shortly!");
         setPhoneNumber("");
       } else {
         toast.error(data.error || "Inquiry failed. Try again.");
@@ -57,6 +65,21 @@ const ProductDetail = () => {
       toast.error("Something went wrong. Try again later.");
     }
   };
+
+  useEffect(() => {
+    const checkARSupport = async () => {
+      try {
+        const capabilities = await checkDeviceARCapabilities();
+        setArSupported(capabilities.isSupported);
+        console.log('AR Support:', capabilities);
+      } catch (error) {
+        console.error('Error checking AR support:', error);
+        setArSupported(false);
+      }
+    };
+
+    checkARSupport();
+  }, []);
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -70,6 +93,19 @@ const ProductDetail = () => {
         ]);
         setProduct(productData);
         setRelatedProducts(relatedProductsData);
+
+        // Fetch AR model if available
+        if (productData.hasARModel) {
+          console.log('Fetching AR model for product:', productData.name, 'Type:', productData.type);
+          try {
+            const modelUrl = await fetchProductARModel(id, productData.type);
+            setArModelUrl(modelUrl);
+            console.log('AR model URL:', modelUrl);
+          } catch (error) {
+            console.error('Error fetching AR model:', error);
+            toast.error('AR model not available for this product');
+          }
+        }
       } catch (err) {
         console.error("Error fetching product data:", err);
         setError("Failed to load product data. Please try again later.");
@@ -126,6 +162,53 @@ const ProductDetail = () => {
     }
   };
 
+  const handleTryOnClick = async () => {
+    if (!arSupported) {
+      toast.error('AR is not supported on your device');
+      return;
+    }
+
+    if (!product.hasARModel) {
+      toast.error('AR model not available for this product');
+      return;
+    }
+
+    if (!arModelUrl) {
+      setArLoading(true);
+      toast.info('Loading AR model...');
+      try {
+        const modelUrl = await fetchProductARModel(id, product.type);
+        setArModelUrl(modelUrl);
+        setShowARView(true);
+      } catch (error) {
+        console.error('Error loading AR model:', error);
+        toast.error('Failed to load AR model');
+      } finally {
+        setArLoading(false);
+      }
+    } else {
+      setShowARView(true);
+    }
+  };
+
+  const getARButtonText = () => {
+    if (product?.type === 'apparel') {
+      return 'Virtual Try-On';
+    } else if (product?.type === 'furniture') {
+      return 'View in Your Space';
+    } else {
+      return 'View in AR';
+    }
+  };
+
+  const getARButtonIcon = () => {
+    if (product?.type === 'apparel') {
+      return <Smartphone size={20} />;
+    } else {
+      return <Box size={20} />;
+    }
+  };
+
   const productImages = product?.image
     ? [product.image, product.image, product.image, product.image]
     : [];
@@ -166,7 +249,7 @@ const ProductDetail = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center bg-white p-8 rounded-lg shadow-md max-w-md">
           <div className="text-yellow-500 text-5xl mb-4">🔍</div>
-          <h2 className="2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Product Not Found
           </h2>
           <p className="text-gray-600 mb-6">
@@ -180,6 +263,16 @@ const ProductDetail = () => {
           </button>
         </div>
       </div>
+    );
+  }
+
+  if (showARView && arModelUrl) {
+    return (
+      <ARTryOn 
+        productType={product.type} 
+        modelUrl={arModelUrl}
+        onClose={() => setShowARView(false)}
+      />
     );
   }
 
@@ -200,6 +293,33 @@ const ProductDetail = () => {
           <span>/</span>
           <span className="text-gray-900">{product.name}</span>
         </nav>
+
+        {/* AR Button in Header */}
+        {product.hasARModel && (
+          <div className="mb-6 flex justify-center">
+            <button
+              onClick={handleTryOnClick}
+              disabled={!arSupported || arLoading}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-semibold transition-colors ${
+                arSupported && !arLoading
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              {arLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Loading AR...</span>
+                </>
+              ) : (
+                <>
+                  {getARButtonIcon()}
+                  <span>{getARButtonText()}</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
@@ -359,6 +479,7 @@ const ProductDetail = () => {
                   Add to Cart
                 </button>
               </div>
+              
               {/* Inquire via AI Assistant */}
               <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <h3 className="text-lg font-semibold text-blue-900 mb-2">
@@ -384,6 +505,7 @@ const ProductDetail = () => {
                   </button>
                 </div>
               </div>
+              
               {/* Shipping Info */}
               <div className="border-t border-gray-200 pt-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
