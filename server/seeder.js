@@ -6,6 +6,7 @@ import Category from './models/Category.js';
 import User from './models/User.js';
 import bcrypt from 'bcryptjs';
 import { seedARProducts } from './seeders/arProducts.js';
+import { seedSnackProducts } from './seeders/snackProducts.js';
 
 // Load environment variables
 dotenv.config();
@@ -247,8 +248,11 @@ const users = [
 
 // Import data function
 const importData = async () => {
-  // Seed AR products
-  await seedARProducts();
+  // Seed AR products and snack products
+  await Promise.all([
+    seedARProducts(),
+    seedSnackProducts()
+  ]);
   try {
     // Clear existing data
     await Category.deleteMany();

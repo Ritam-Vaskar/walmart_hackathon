@@ -11,6 +11,7 @@ import cartRoutes from './routes/cart.js';
 import orderRoutes from './routes/orders.js';
 import wishlistRoutes from './routes/wishlist.js';
 import arModelsRoutes from './routes/arModels.js';
+import snackBucketRoutes from './routes/snackBucket.js';
 
 // Load environment variables
 dotenv.config();
@@ -33,6 +34,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/ar-models', arModelsRoutes);
+app.use('/api/snack-bucket', snackBucketRoutes);
 
 // Root route
 app.get('/', (req, res) => {
