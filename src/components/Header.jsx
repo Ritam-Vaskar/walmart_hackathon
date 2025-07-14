@@ -50,12 +50,12 @@ const Header = () => {
             <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
               <img
                 src="https://cdn-icons-png.flaticon.com/512/5977/5977595.png"
-                alt="Walmart"
+                alt="S-Mart+"
                 className="w-8 h-8"
               />
             </div>
             <div className="hidden sm:block">
-              <div className="text-2xl font-bold text-blue-600">Walmart</div>
+              <div className="text-2xl font-bold text-blue-600">S-Mart+</div>
               <div className="text-xs text-gray-500 -mt-1">Save Money. Live Better.</div>
             </div>
           </Link>
@@ -67,7 +67,7 @@ const Header = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search everything at Walmart online and in store"
+                placeholder="Search everything at S-Mart+ online and in store"
                 className="w-full px-4 py-3 pl-12 border-2 border-gray-300 rounded-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
               />
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
