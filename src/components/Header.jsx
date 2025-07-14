@@ -180,6 +180,7 @@ const Header = () => {
               <Link to="/products" className="text-white hover:text-blue-200 font-medium py-3">Products</Link>
               <Link to="/categories" className="text-white hover:text-blue-200 font-medium py-3">Categories</Link>
               <Link to="/deals" className="text-white hover:text-blue-200 font-medium py-3">Deals</Link>
+              <Link to="/snack-bucket" className="text-white hover:text-blue-200 font-medium py-3">Snack Bucket</Link>
               <Link to="/wishlist" className="text-white hover:text-blue-200 font-medium py-3">Wishlist</Link>
               <Link to="/cart" className="text-white hover:text-blue-200 font-medium py-3">Cart</Link>
               {user && (

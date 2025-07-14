@@ -17,6 +17,7 @@ import Register from './pages/Register';
 import Orders from './pages/Orders';
 import Checkout from './pages/Checkout';
 import Profile from './pages/Profile';
+import SnackBucket from './pages/SnackBucket';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -49,7 +50,8 @@ function AppContent() {
             <Route path="/register" element={<Register />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/profile" element={<Profile />} />        
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/snack-bucket" element={<SnackBucket />} />
           </Routes>
            <ToastContainer position="top-center" />
         </main>
