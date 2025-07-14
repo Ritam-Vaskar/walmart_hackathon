@@ -1,4 +1,4 @@
-# 🛒 AI Product Curator - Walmart Hackathon Project
+# 🛒 AI Product Curator(S-Mart+) - Walmart Hackathon Project
 
 A smart, interactive shopping experience that combines AI-driven curation, real-time recommendations, voice interaction, and AR product previews to bring the best of physical and online shopping into one seamless platform.
 
@@ -105,6 +105,6 @@ A smart, interactive shopping experience that combines AI-driven curation, real-
 
 * **Ritam Vaskar**
 * **Rudrika Panigrahi**
-* **Shreyah Singh**
+* **Shreyash Singh**
 
 ---
