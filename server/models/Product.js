@@ -50,6 +50,23 @@ const productSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    hasARModel: {
+      type: Boolean,
+      default: false
+    },
+    arModelType: {
+      type: String,
+      enum: ['apparel', 'furniture'],
+      required: function() {
+        return this.hasARModel;
+      }
+    },
+    arModelUrl: {
+      type: String,
+      required: function() {
+        return this.hasARModel;
+      }
+    }
   },
   { timestamps: true }
 );

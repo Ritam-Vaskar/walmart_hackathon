@@ -10,6 +10,7 @@ import productRoutes from './routes/products.js';
 import cartRoutes from './routes/cart.js';
 import orderRoutes from './routes/orders.js';
 import wishlistRoutes from './routes/wishlist.js';
+import arModelsRoutes from './routes/arModels.js';
 
 // Load environment variables
 dotenv.config();
@@ -22,12 +23,16 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
+// Serve static files for 3D models
+app.use('/models', express.static('public/models'));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/ar-models', arModelsRoutes);
 
 // Root route
 app.get('/', (req, res) => {

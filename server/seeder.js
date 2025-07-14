@@ -1,9 +1,11 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import colors from 'colors';
 import Product from './models/Product.js';
 import Category from './models/Category.js';
 import User from './models/User.js';
 import bcrypt from 'bcryptjs';
+import { seedARProducts } from './seeders/arProducts.js';
 
 // Load environment variables
 dotenv.config();
@@ -245,6 +247,8 @@ const users = [
 
 // Import data function
 const importData = async () => {
+  // Seed AR products
+  await seedARProducts();
   try {
     // Clear existing data
     await Category.deleteMany();
