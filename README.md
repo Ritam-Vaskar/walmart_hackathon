@@ -58,7 +58,11 @@ A smart, interactive shopping experience that combines AI-driven curation, real-
   * Cart & order history
 
 ---
+## 📽️ Demo Video
 
+Watch the full walkthrough here: https://youtu.be/rmJQovH3WfU
+
+---
 ## 🗄️ Screenshots
 
 ### 🔍 AI Product Curation Page
