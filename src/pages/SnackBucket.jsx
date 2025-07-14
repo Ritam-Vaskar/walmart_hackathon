@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard';
+import api from '../services/api';
 import {
   Star,
   ShoppingCart,
@@ -33,17 +34,17 @@ const SnackBucket = () => {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
-  // Enhanced debug function
+  // Enhanced debug function using axios
   const getDebugInfo = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/snack-bucket/debug-products`);
-      const data = await response.json();
-      setDebugInfo(data);
+      const response = await api.get('/snack-bucket/debug-products');
+      setDebugInfo(response.data);
     } catch (error) {
       console.error('Error getting debug info:', error);
-      toast.error('Failed to fetch database information');
+      toast.error(error.response?.data?.message || 'Failed to fetch database information');
     }
   };
+
   const handleVoiceInput = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -74,6 +75,7 @@ const SnackBucket = () => {
       setIsListening(false);
     };
   };
+
   const speakRecommendation = () => {
     if (!recommendation?.reasoning || recommendation.reasoning.length === 0) {
       toast.error('Nothing to speak. Generate a recommendation first.');
@@ -91,7 +93,7 @@ const SnackBucket = () => {
     speechSynthesis.speak(utterance);
   };
 
-  // Enhanced recommendation function with custom prompt
+  // Enhanced recommendation function with custom prompt using axios
   const getRecommendation = async () => {
     if (!customPrompt.trim()) {
       toast.error('Please enter a prompt to generate recommendations');
@@ -102,19 +104,11 @@ const SnackBucket = () => {
     setRecommendation(null);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/snack-bucket/recommend`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: customPrompt.trim() })
+      const response = await api.post('/snack-bucket/recommend', {
+        prompt: customPrompt.trim()
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to get recommendations');
-      }
-
-      setRecommendation(data.bucket);
+      setRecommendation(response.data.bucket);
       setAnimateCards(true);
 
       // Reset animation after delay
@@ -123,7 +117,8 @@ const SnackBucket = () => {
       toast.success('🎉 Perfect recommendations generated for your request!');
     } catch (error) {
       console.error('Error getting recommendations:', error);
-      toast.error(error.message || 'Failed to get recommendations');
+      const errorMessage = error.response?.data?.message || 'Failed to get recommendations';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -142,22 +137,28 @@ const SnackBucket = () => {
       let addedCount = 0;
       let skippedCount = 0;
 
-      recommendation.products.forEach(product => {
+      // Process each product
+      for (const product of recommendation.products) {
         if (product.inStock) {
-          addToCart({ ...product, id: product._id }, 1);
-          addedCount++;
+          try {
+            await addToCart({ ...product, id: product._id }, 1);
+            addedCount++;
+          } catch (error) {
+            console.error(`Error adding product ${product._id} to cart:`, error);
+            skippedCount++;
+          }
         } else {
           skippedCount++;
         }
-      });
+      }
 
       if (addedCount > 0) {
         toast.success(`🛒 ${addedCount} items added to cart!`);
         if (skippedCount > 0) {
-          toast.warning(`⚠️ ${skippedCount} out of stock items were skipped`);
+          toast.warning(`⚠️ ${skippedCount} items were skipped (out of stock or error)`);
         }
       } else {
-        toast.error('No items could be added - all are out of stock');
+        toast.error('No items could be added - all are out of stock or unavailable');
       }
     } catch (error) {
       console.error('Error adding items to cart:', error);
@@ -200,6 +201,26 @@ const SnackBucket = () => {
   useEffect(() => {
     getDebugInfo();
   }, []);
+
+  // Axios interceptor for handling auth errors
+  useEffect(() => {
+    const interceptor = api.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          // Handle unauthorized access
+          localStorage.removeItem('walmart_token');
+          toast.error('Session expired. Please login again.');
+          navigate('/login');
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      api.interceptors.response.eject(interceptor);
+    };
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
@@ -355,7 +376,8 @@ const SnackBucket = () => {
 
               <button
                 onClick={getDebugInfo}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+                disabled={loading}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
               >
                 <RefreshCw size={16} className="inline mr-2" />
                 Refresh
