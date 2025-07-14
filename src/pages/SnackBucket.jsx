@@ -116,7 +116,7 @@ const SnackBucket = () => {
 
       toast.success('🎉 Perfect recommendations generated for your request!');
     } catch (error) {
-      console.error('Error getting recommendations:', error);
+      console.error("Error getting recommendations: ", error.message, error.response?.data);
       const errorMessage = error.response?.data?.message || 'Failed to get recommendations';
       toast.error(errorMessage);
     } finally {
