@@ -74,7 +74,7 @@ const Register = () => {
             <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-xl">
               W
             </div>
-            <span className="text-2xl font-bold text-blue-600">Walmart</span>
+            <span className="text-2xl font-bold text-blue-600">S-Mart+</span>
           </Link>
           <h2 className="text-3xl font-bold text-gray-900">Create your account</h2>
           <p className="text-gray-600 mt-2">
@@ -234,14 +234,6 @@ const Register = () => {
               )}
             </button>
           </form>
-
-          {/* Demo Account Info */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="font-medium text-blue-900 mb-2">Demo Registration</h3>
-            <p className="text-sm text-blue-800">
-              Fill in any information to create a demo account and explore all features.
-            </p>
-          </div>
 
           {/* Social Registration */}
           <div className="mt-6">

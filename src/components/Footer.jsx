@@ -95,7 +95,7 @@ const Footer = () => {
             <Link to="#" className="hover:text-white transition-colors">Accessibility</Link>
             <Link to="#" className="hover:text-white transition-colors">Store Directory</Link>
           </div>
-          <p>&copy; 2024 Walmart Inc. All Rights Reserved.</p>
+          <p>&copy; 2024 S-Mart+ Inc. All Rights Reserved.</p>
         </div>
       </div>
     </footer>
