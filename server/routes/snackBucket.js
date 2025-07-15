@@ -5,7 +5,7 @@ import Product from '../models/Product.js';
 const router = express.Router();
 
 // Initialize Groq AI
-const groq = new Groq({ apiKey: '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' });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 // Helper function to format products for Groq prompt
 const formatProductsForPrompt = (products) => {
